@@ -258,6 +258,10 @@ We welcome Issues and PRs. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
 安全问题和敏感数据处理边界见 [SECURITY.md](SECURITY.md)。
 
+维护、发布和 issue triage 流程见 [docs/maintainer-playbook.md](docs/maintainer-playbook.md)。
+
+版本维护记录见 [CHANGELOG.md](CHANGELOG.md)。
+
 ---
 
 ## 许可证 / License
