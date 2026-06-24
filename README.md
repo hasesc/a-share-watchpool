@@ -256,6 +256,8 @@ We welcome Issues and PRs. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
 社区行为准则见 / For code of conduct, see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
+安全问题和敏感数据处理边界见 [SECURITY.md](SECURITY.md)。
+
 ---
 
 ## 许可证 / License
