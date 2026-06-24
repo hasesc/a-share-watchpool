@@ -242,6 +242,14 @@ if ($Stage -in @("pre_market", "pre_screen", "morning_confirm", "late_confirm", 
     } else {
       Write-Host "Paper simulator script not found: $SimulatorScript"
     }
+    # After late_confirm, auto-generate asset update report from latest sim data
+    if ($Stage -eq "late_confirm") {
+      $AssetReportScript = Join-Path $Root "paper-sim\scripts\gen_asset_report.py"
+      if (Test-Path $AssetReportScript) {
+        Write-Host "Generating asset update report..."
+        & $Python $AssetReportScript
+      }
+    }
   }
 }
 

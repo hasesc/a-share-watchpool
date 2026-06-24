@@ -1,0 +1,38 @@
+{
+  "report_type": "offline_sample",
+  "generated_at": "2026-06-24T09:05:00+08:00",
+  "title": "A-Share Watchpool Offline Sample Report",
+  "summary": "Fictional report summary for documentation and schema demonstration.",
+  "data_policy": {
+    "public_data_only": true,
+    "fictional_or_anonymized": true,
+    "broker_connection": false,
+    "real_trade_instruction": false,
+    "investment_advice": false
+  },
+  "data_health": {
+    "health_status": "ok",
+    "can_rank_paper_watch": true,
+    "snapshot_rows": 120
+  },
+  "watchlist_overview": {
+    "primary_watchlist_count": 1,
+    "research_watchlist_count": 1,
+    "blocked_by_risk_count": 0
+  },
+  "paper_simulation": {
+    "mode": "record_only",
+    "actions": [
+      {
+        "symbol": "SAMPLE001",
+        "paper_simulation_action": "record_watch",
+        "reason": "Fictional sample passed public-data watchlist checks."
+      }
+    ]
+  },
+  "audit_notes": [
+    "This sample report is not generated from live market data.",
+    "This sample report does not contain personal account data or real trading records.",
+    "This sample report is not investment advice."
+  ]
+}

@@ -6,6 +6,7 @@
 
 - `sample_data_health.json`：展示数据健康检查结果的最小结构。
 - `sample_watchlist.json`：展示观察样本列表和纸面模拟字段的最小结构。
+- `sample_report_summary.json`：展示离线示例报告摘要结构，不依赖联网行情数据。
 
 ## 使用边界
 
