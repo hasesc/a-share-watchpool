@@ -1,23 +1,29 @@
 ---
-name: 功能建议
-about: 建议新功能、新数据源或改进现有逻辑
-title: '[FEATURE] '
+name: Feature request
+about: Suggest an improvement for public-data research, paper simulation, or audit workflows
+title: "[Feature]: "
 labels: enhancement
-assignees: ''
+assignees: ""
 ---
 
-## 功能描述
+## 需求背景
 
-<!-- 你希望新增或改进什么功能？ -->
+请说明这个改进服务于哪类研究、纸面模拟或策略审计流程。
 
-## 使用场景
+## 建议方案
 
-<!-- 这个功能在什么情况下会用到？解决了什么问题？ -->
+请描述你希望新增或调整的行为。
 
-## 建议实现方式
+## 可接受范围
 
-<!-- （可选）你有什么实现思路？ -->
+- 是否只使用公开数据：
+- 是否不连接券商接口：
+- 是否不产生真实买卖指令：
 
-## 参考资料
+## 验证方式
 
-<!-- （可选）相关论文、文档链接等 -->
+请说明可以如何用测试、示例数据或文档验证该改动。
+
+## 额外说明
+
+本项目不接受真实交易接口、自动下单、荐股承诺或收益承诺相关需求。

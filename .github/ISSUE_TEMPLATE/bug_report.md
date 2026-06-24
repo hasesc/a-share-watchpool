@@ -1,40 +1,34 @@
 ---
-name: Bug 反馈
-about: 报告脚本运行错误、数据异常或报告生成问题
-title: '[BUG] '
+name: Bug report
+about: Report a reproducible problem in the research framework
+title: "[Bug]: "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 ## 问题描述
 
-<!-- 简要描述遇到的问题 -->
+请简要描述遇到的问题。
 
 ## 复现步骤
 
-1. 执行了哪个脚本/Stage：
-2. 传入的参数：
-3. 完整错误信息（请粘贴）：
-
-```
-粘贴错误信息
-```
+1. 运行命令：
+2. 输入数据或 stage：
+3. 实际结果：
+4. 预期结果：
 
 ## 环境信息
 
-- OS：Windows 10 / Windows 11
-- Python 版本：
-- akshare 版本（`python -c "import akshare as ak; print(ak.__version__)"`）：
-- 运行时间（盘前/盘中/盘后）：
+- OS:
+- Python:
+- PowerShell:
+- 项目版本或 commit:
 
-## 相关文件
+## 日志或截图
 
-<!-- 如有，请附上 data_health.json 或 *_run_summary.json 的内容 -->
+请粘贴必要的日志片段。不要上传真实账户数据、API key、cookie、token 或个人交易记录。
 
-```json
-粘贴 JSON 内容
-```
+## 数据来源状态
 
-## 期望行为
-
-<!-- 你期望应该发生什么 -->
+- 是否依赖 AKShare / 东方财富等公开数据源：
+- 是否可以用 `examples/` 中的脱敏数据复现：
