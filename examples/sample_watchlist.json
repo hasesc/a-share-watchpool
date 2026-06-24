@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-06-24T08:50:00+08:00",
+  "stage": "pre_market",
+  "strategy_version": "a-share-watchpool-v0.9.0",
+  "data_policy": {
+    "source": "fictional_public_market_sample",
+    "broker_connection": false,
+    "real_trade_instruction": false,
+    "investment_advice": false
+  },
+  "watchlist_entries": [
+    {
+      "symbol": "SAMPLE001",
+      "name": "示例科技A",
+      "sector": "示例半导体",
+      "selection_bucket": "short_term",
+      "driver_score": 78.5,
+      "risk_penalty": 4.0,
+      "execution_score": 82.0,
+      "execution_action": "clear",
+      "reason_tags": [
+        "sector_strength_sample",
+        "liquidity_check_passed"
+      ],
+      "paper_simulation_action": "record_watch",
+      "notes": "Fictional watchlist entry for schema demonstration."
+    },
+    {
+      "symbol": "SAMPLE002",
+      "name": "示例制造B",
+      "sector": "示例高端制造",
+      "selection_bucket": "medium_term",
+      "driver_score": 69.0,
+      "risk_penalty": 10.0,
+      "execution_score": 74.0,
+      "execution_action": "caution",
+      "reason_tags": [
+        "medium_term_research_sample",
+        "risk_review_required"
+      ],
+      "paper_simulation_action": "record_only",
+      "notes": "Fictional watchlist entry for schema demonstration."
+    }
+  ]
+}

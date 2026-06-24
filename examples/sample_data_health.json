@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-06-24T08:45:00+08:00",
+  "stage": "pre_market",
+  "health_status": "ok",
+  "can_rank_paper_watch": true,
+  "snapshot_rows": 120,
+  "quote_source": "sample_public_feed",
+  "risk_check": "complete",
+  "execution_check": "complete",
+  "notes": [
+    "Fictional sample data for schema demonstration only.",
+    "No broker connection, account data, or real trading record is included."
+  ]
+}
