@@ -1,0 +1,261 @@
+{
+  "version": "2026-06-23-v3",
+  "purpose": "Local supplemental industry/theme mappings for a-share-watchpool sector-first selection. Prefer structured industry fields when available; use these rules when public snapshots have blank industry/concept fields.",
+  "rules": [
+    {
+      "keywords": [
+        "士兰微",
+        "华润微",
+        "露笑科技",
+        "深科技"
+      ],
+      "sector": "半导体 / 电子",
+      "scarce_layer": "功率半导体与电子制造链条",
+      "direction": "电子与半导体"
+    },
+    {
+      "keywords": [
+        "江波龙"
+      ],
+      "sector": "存储芯片 / 半导体设计",
+      "scarce_layer": "存储模组与半导体设计",
+      "direction": "半导体设计与存储"
+    },
+    {
+      "keywords": [
+        "英唐智控"
+      ],
+      "sector": "电子元器件 / 分销与设计",
+      "scarce_layer": "电子元器件供应链",
+      "direction": "电子与半导体"
+    },
+    {
+      "keywords": [
+        "石英股份"
+      ],
+      "sector": "半导体材料 / 石英材料",
+      "scarce_layer": "高纯石英材料",
+      "direction": "电子材料与半导体光电"
+    },
+    {
+      "keywords": [
+        "新疆众和"
+      ],
+      "sector": "有色金属 / 铝电子材料",
+      "scarce_layer": "铝基电子新材料",
+      "direction": "黄金资源与有色金属"
+    },
+    {
+      "keywords": [
+        "恩捷股份"
+      ],
+      "sector": "锂电材料 / 隔膜",
+      "scarce_layer": "锂电隔膜材料",
+      "direction": "锂电材料"
+    },
+    {
+      "keywords": [
+        "滨化股份"
+      ],
+      "sector": "化工新材料",
+      "scarce_layer": "基础化工与电子化学材料",
+      "direction": "化工新材料"
+    },
+    {
+      "keywords": [
+        "欧科亿"
+      ],
+      "sector": "硬质合金 / 高端刀具",
+      "scarce_layer": "硬质合金刀具材料",
+      "direction": "新材料与资源品"
+    },
+    {
+      "keywords": [
+        "华友钴业"
+      ],
+      "sector": "钴镍 / 锂电资源",
+      "scarce_layer": "钴镍资源与电池材料",
+      "direction": "黄金资源与有色金属"
+    },
+    {
+      "keywords": [
+        "中科三环",
+        "金力永磁",
+        "横店东磁",
+        "正海磁材"
+      ],
+      "sector": "磁材 / 稀土功能材料",
+      "scarce_layer": "高性能磁材",
+      "direction": "新材料与资源品"
+    },
+    {
+      "keywords": [
+        "三环集团",
+        "风华高科",
+        "顺络电子"
+      ],
+      "sector": "电子元件 / 被动元件",
+      "scarce_layer": "被动元件与电子陶瓷",
+      "direction": "电子与半导体"
+    },
+    {
+      "keywords": [
+        "北方稀土",
+        "广晟有色",
+        "厦门钨业",
+        "章源钨业"
+      ],
+      "sector": "稀土小金属 / 有色资源",
+      "scarce_layer": "稀土钨钼资源供给",
+      "direction": "黄金资源与有色金属"
+    },
+    {
+      "keywords": [
+        "天赐材料",
+        "新宙邦",
+        "多氟多",
+        "天际股份"
+      ],
+      "sector": "锂电化学品",
+      "scarce_layer": "电解液与锂盐材料",
+      "direction": "锂电材料"
+    },
+    {
+      "keywords": [
+        "兆易创新",
+        "北京君正",
+        "澜起科技",
+        "东芯股份"
+      ],
+      "sector": "存储芯片 / 半导体设计",
+      "scarce_layer": "存储与接口芯片设计",
+      "direction": "半导体设计与存储"
+    },
+    {
+      "keywords": [
+        "中微公司",
+        "北方华创",
+        "拓荆科技",
+        "芯源微"
+      ],
+      "sector": "半导体设备",
+      "scarce_layer": "半导体设备验证",
+      "direction": "半导体设备"
+    },
+    {
+      "keywords": [
+        "沪电股份",
+        "胜宏科技",
+        "生益科技",
+        "金安国纪"
+      ],
+      "sector": "PCB / 覆铜板",
+      "scarce_layer": "PCB与覆铜板材料",
+      "direction": "PCB与电子制造"
+    },
+    {
+      "keywords": [
+        "卓胜微"
+      ],
+      "sector": "射频芯片 / 半导体设计",
+      "scarce_layer": "射频前端芯片设计",
+      "direction": "电子与半导体"
+    },
+    {
+      "keywords": [
+        "天岳先进"
+      ],
+      "sector": "第三代半导体材料",
+      "scarce_layer": "碳化硅衬底材料",
+      "direction": "电子材料与半导体光电"
+    },
+    {
+      "keywords": [
+        "彩虹股份"
+      ],
+      "sector": "显示面板 / 玻璃基板",
+      "scarce_layer": "显示玻璃基板",
+      "direction": "显示面板与消费电子"
+    },
+    {
+      "keywords": [
+        "和远气体"
+      ],
+      "sector": "电子特气 / 工业气体",
+      "scarce_layer": "电子特气材料",
+      "direction": "电子材料与半导体光电"
+    },
+    {
+      "keywords": [
+        "中科飞测"
+      ],
+      "sector": "半导体设备 / 量检测",
+      "scarce_layer": "半导体检测设备",
+      "direction": "半导体设备"
+    },
+    {
+      "keywords": [
+        "德业股份"
+      ],
+      "sector": "电力设备 / 逆变器",
+      "scarce_layer": "逆变器与储能设备",
+      "direction": "电力设备与新能源"
+    },
+    {
+      "keywords": [
+        "杰瑞股份"
+      ],
+      "sector": "油气装备",
+      "scarce_layer": "油气工程装备",
+      "direction": "高端制造与能源装备"
+    },
+    {
+      "keywords": [
+        "中天科技"
+      ],
+      "sector": "光通信 / 电力线缆",
+      "scarce_layer": "光电缆与海缆链条",
+      "direction": "光通信与高景气硬件"
+    },
+    {
+      "keywords": [
+        "中国太保"
+      ],
+      "sector": "保险 / 非银金融",
+      "scarce_layer": "保险风险偏好弹性",
+      "direction": "非银金融与保险"
+    },
+    {
+      "keywords": [
+        "巨人网络"
+      ],
+      "sector": "游戏 / 数字内容",
+      "scarce_layer": "游戏内容与AI应用",
+      "direction": "AI与数字服务"
+    },
+    {
+      "keywords": [
+        "中远海能"
+      ],
+      "sector": "航运 / 能源运输",
+      "scarce_layer": "油运运力供给",
+      "direction": "航运与周期运输"
+    },
+    {
+      "keywords": [
+        "国机精工"
+      ],
+      "sector": "高端装备 / 轴承磨料",
+      "scarce_layer": "精密轴承与超硬材料",
+      "direction": "高端制造与新材料"
+    },
+    {
+      "keywords": [
+        "圣泉集团"
+      ],
+      "sector": "化工新材料 / 生物质材料",
+      "scarce_layer": "酚醛树脂与生物质材料",
+      "direction": "化工新材料"
+    }
+  ]
+}

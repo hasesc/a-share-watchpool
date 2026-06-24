@@ -1,0 +1,60 @@
+# ============================================================
+# A股观察池 · .gitignore
+# ============================================================
+
+# --- 运行时生成的数据目录 ---
+workspace/data/
+workspace/reports/
+workspace/logs/
+workspace/exports/
+workspace/paper-sim/data/
+
+# --- 数据库文件 ---
+*.sqlite
+*.db
+
+# --- Python 缓存 ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+
+# --- 虚拟环境 ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE / 编辑器 ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- 日志文件 ---
+*.log
+logs/
+
+# --- 临时文件 ---
+*.tmp
+*.bak
+tmp/
+temp/
+
+# --- 导出/截图 ---
+exports/
+screenshots/
+
+# --- 个人配置（含账号信息）---
+.env
+*.secret
+secrets/
+
+# --- AI Agent 专属上下文（不适合公开）---
+CODEX_CONTEXT.md
+.codex/
+.gemini/

@@ -1,0 +1,13 @@
+{
+  "experiment_name": "a-share-paper-sim-month-001",
+  "start_date": "YYYY-MM-DD",
+  "end_date": "YYYY-MM-DD",
+  "initial_cash": 100000.0,
+  "decision_time": "14:45",
+  "data_stage": "late_confirm",
+  "paper_only": true,
+  "rule_lock": "Do not change simulator decision rules during an active experiment unless you explicitly reset it.",
+  "notes": "Paper-only simulator. No broker connection, no real orders, no investment advice.",
+  "selection_source": "skill_report_tradable_candidates_only",
+  "selection_rule": "Open candidates must come from render_watchpool_light.py simulator_selection_pool / tradable_candidates. The simulator may decide exposure, position count, holds, and exits, but not invent a separate stock-selection universe."
+}
