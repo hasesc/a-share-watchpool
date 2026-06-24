@@ -2,6 +2,8 @@
 
 本目录包含脱敏或虚构的示例文件，用于展示 A股观察池 · A-Share Watchpool 的数据结构。
 
+字段说明见 [docs/example-schemas.md](../docs/example-schemas.md)。
+
 ## 文件说明
 
 - `sample_data_health.json`：展示数据健康检查结果的最小结构。
