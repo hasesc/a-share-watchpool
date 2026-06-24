@@ -1,16 +1,10 @@
 import json
 from pathlib import Path
 
+from scripts.validate_examples import FORBIDDEN_FIELDS, validate_examples
 
-FORBIDDEN_TRADE_FIELDS = {
-    "buy_order",
-    "sell_order",
-    "broker_api",
-    "account_id",
-    "account_number",
-    "client_id",
-    "trade_password",
-}
+
+FORBIDDEN_TRADE_FIELDS = FORBIDDEN_FIELDS
 
 
 def load_json(path: str):
@@ -54,3 +48,7 @@ def test_sample_report_summary_is_valid_json_without_real_trade_fields():
 
     keys = set(iter_keys(data))
     assert keys.isdisjoint(FORBIDDEN_TRADE_FIELDS)
+
+
+def test_validate_examples_script_accepts_current_fixtures():
+    assert validate_examples() == []
