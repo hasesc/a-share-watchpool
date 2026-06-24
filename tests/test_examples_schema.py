@@ -2,7 +2,15 @@ import json
 from pathlib import Path
 
 
-FORBIDDEN_TRADE_FIELDS = {"buy_order", "sell_order", "broker_api"}
+FORBIDDEN_TRADE_FIELDS = {
+    "buy_order",
+    "sell_order",
+    "broker_api",
+    "account_id",
+    "account_number",
+    "client_id",
+    "trade_password",
+}
 
 
 def load_json(path: str):
@@ -30,6 +38,17 @@ def test_sample_watchlist_is_valid_json_without_real_trade_fields():
     data = load_json("examples/sample_watchlist.json")
 
     assert isinstance(data["watchlist_entries"], list)
+    assert data["data_policy"]["broker_connection"] is False
+    assert data["data_policy"]["real_trade_instruction"] is False
+
+    keys = set(iter_keys(data))
+    assert keys.isdisjoint(FORBIDDEN_TRADE_FIELDS)
+
+
+def test_sample_report_summary_is_valid_json_without_real_trade_fields():
+    data = load_json("examples/sample_report_summary.json")
+
+    assert data["data_policy"]["public_data_only"] is True
     assert data["data_policy"]["broker_connection"] is False
     assert data["data_policy"]["real_trade_instruction"] is False
 
