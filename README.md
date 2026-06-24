@@ -1,213 +1,228 @@
-﻿# A鑲¤瀵熸睜 路 A-Share Watchpool
+# A股观察池 · A-Share Watchpool
 
-> 鍩轰簬鍏紑琛屾儏鏁版嵁鐨?A 鑲￠噺鍖栬瀵熶笌绾搁潰楠岃瘉绯荤粺
+> 基于公开行情数据的 A 股量化观察与纸面验证系统
 >
-> 浠呬緵涓汉瀛︿範涓庣瓥鐣ョ爺绌讹紝涓嶆瀯鎴愭姇璧勫缓璁紝涓嶄骇鐢熺湡瀹炰拱鍗栨寚浠ゃ€?
+> 仅供个人学习与策略研究，不构成投资建议，不产生真实买卖指令。
+
 ---
 
-## 馃搶 椤圭洰绠€浠?
-**A鑲¤瀵熸睜** 鏄竴濂楅潰鍚?A 鑲″競鍦虹殑杞婚噺绾ч噺鍖栬瀵熸鏋讹紝甯姪涓汉鎶曡祫鑰?閲忓寲鐖卞ソ鑰咃細
+## 📌 项目简介
 
-- 馃搳 姣忔棩鑷姩閲囬泦鍏ㄥ競鍦鸿鎯呭揩鐓э紙娌繁浜?A 鑲★紝5500+ 鏍囩殑锛?- 馃攳 澶氱淮搴︾瓫閫夊€欓€夎偂绁紙鍔ㄩ噺銆佹澘鍧椼€佹墽琛岃川閲忋€佸叕鍛婇闄╋級
-- 馃摪 鎶撳彇鏀跨瓥/琛屼笟/涓偂鏂伴椈鍌寲鍓傦紝浣滀负閫夎偂杈呭姪淇″彿
-- 馃搱 鐢熸垚鐩樺墠閫夎偂鏃ユ姤銆佺洏鍚庡鐩樻姤鍛婏紙HTML 鍙鍖栵級
-- 馃梽锔?SQLite 澶嶇洏鏁版嵁搴?+ 绛栫暐瀹¤浠〃鐩?- 馃幆 鍐呯疆绾搁潰妯℃嫙鐩橈紙Paper Simulator锛夛紝T+1/T+2/T+3 璺熻釜楠岃瘉
+**A股观察池** 是一套面向 A 股市场的轻量级量化观察框架，帮助个人投资者/量化爱好者：
 
-### 鏍稿績鐞嗗康
+- 📊 每日自动采集全市场行情快照（沪深京 A 股，5500+ 标的）
+- 🔍 多维度筛选候选股票（动量、板块、执行质量、公告风险）
+- 📰 抓取政策/行业/个股新闻催化剂，作为选股辅助信号
+- 📈 生成盘前选股日报、盘后复盘报告（HTML 可视化）
+- 🗄️ SQLite 复盘数据库 + 策略审计仪表盘
+- 🎯 内置纸面模拟盘（Paper Simulator），T+1/T+2/T+3 跟踪验证
 
-> "鍏堥獙璇侊紝鍐嶆墽琛屻€? 鎵€鏈夐€夎偂閫昏緫鍦ㄧ湡瀹炶祫閲戜粙鍏ュ墠锛屽厛缁忚繃鑷冲皯 20 涓湁鏁堟牱鏈殑绾搁潰楠岃瘉銆?
+### 核心理念
+
+> "先验证，再执行。" 所有选股逻辑在真实资金介入前，先经过至少 20 个有效样本的纸面验证。
+
 ---
 
-## 馃彈锔?绯荤粺鏋舵瀯
+## 🏗️ 系统架构
 
 ```mermaid
 graph TD
-    A[鍏紑琛屾儏鏁版嵁<br/>AKShare / 涓滄柟璐㈠瘜] -->|08:40 鐩樺墠| B[collect_public_data.py<br/>鍏ㄥ競鍦哄揩鐓?+ 鍊欓€夌瀛怾
-    B --> C[check_execution_quality.py<br/>娑ㄥ仠/娴佸姩鎬?鎸箙妫€鏌
-    B --> D[check_risk_events.py<br/>鍑忔寔/瑙ｇ/鐩戠椋庨櫓]
-    B --> E[collect_policy_news.py<br/>鏀跨瓥/琛屼笟/鍏徃鏂伴椈]
-    B --> F[monitor_data_health.py<br/>鏁版嵁鍋ュ悍妫€鏌
+    A[公开行情数据<br/>AKShare / 东方财富] -->|08:40 盘前| B[collect_public_data.py<br/>全市场快照 + 候选种子]
+    B --> C[check_execution_quality.py<br/>涨停/流动性/振幅检查]
+    B --> D[check_risk_events.py<br/>减持/解禁/监管风险]
+    B --> E[collect_policy_news.py<br/>政策/行业/公司新闻]
+    B --> F[monitor_data_health.py<br/>数据健康检查]
 
-    C & D & E & F --> G[render_watchpool_light.py<br/>涓诲叆鍙ｏ細鏋勯€?JSON + 娓叉煋 HTML]
+    C & D & E & F --> G[render_watchpool_light.py<br/>主入口：构造 JSON + 渲染 HTML]
 
-    G --> H[鐩樺墠鏃ユ姤<br/>pre_market_light.html]
-    G --> I[鐩樺悗澶嶇洏<br/>post_close_review_light.html]
-    G --> J[鍛ㄥ鐩?br/>weekly_review_light.html]
+    G --> H[盘前日报<br/>pre_market_light.html]
+    G --> I[盘后复盘<br/>post_close_review_light.html]
+    G --> J[周复盘<br/>weekly_review_light.html]
 
-    G --> K[watchpool_db.py<br/>鍐欏叆 SQLite]
-    K --> L[绛栫暐浠〃鐩?br/>watchpool_dashboard.html]
-    K --> M[瀹¤鎶ュ憡<br/>strategy_audit.html]
+    G --> K[watchpool_db.py<br/>写入 SQLite]
+    K --> L[策略仪表盘<br/>watchpool_dashboard.html]
+    K --> M[审计报告<br/>strategy_audit.html]
 
-    G --> N[paper_sim_portfolio.py<br/>绾搁潰妯℃嫙鐩?14:45 鍐崇瓥]
+    G --> N[paper_sim_portfolio.py<br/>纸面模拟盘 14:45 决策]
 ```
 
 ---
 
-## 馃搮 姣忔棩 Pipeline 鏃跺簭
+## 📅 每日 Pipeline 时序
 
-| 鏃堕棿 | Stage | 涓昏浜у嚭 |
+| 时间 | Stage | 主要产出 |
 |------|-------|---------|
-| 08:40 | `pre_market` | 鍏ㄥ競鍦哄揩鐓?+ 鍊欓€夌瀛?+ 鍋ュ悍妫€鏌?|
-| 鐩樺墠 | `pre_market` HTML | `pre_market_light.html`锛堢洏鍓嶉€夎偂鏃ユ姤锛?|
-| 14:45 | `late_confirm` | 绾搁潰妯℃嫙鐩樺喅绛栵紙浠呰瀵燂紝涓嶅疄鐩橈級 |
-| 15:06 | `post_close` | 鏀剁洏蹇収 + 鏁版嵁鍋ュ悍 |
-| 16:30 | `review_fill` | T+1/T+2/T+3 鍥為【 + Dashboard 鏇存柊 |
-| 鐩樺悗 | `post_close` HTML | `post_close_review_light.html`锛堢洏鍚庡鐩橈級 |
-| 姣忓懆浜?| `weekly` HTML | `weekly_review_light.html`锛堝懆澶嶇洏锛?|
+| 08:40 | `pre_market` | 全市场快照 + 候选种子 + 健康检查 |
+| 盘前 | `pre_market` HTML | `pre_market_light.html`（盘前选股日报） |
+| 14:45 | `late_confirm` | 纸面模拟盘决策（仅观察，不实盘） |
+| 15:06 | `post_close` | 收盘快照 + 数据健康 |
+| 16:30 | `review_fill` | T+1/T+2/T+3 回顾 + Dashboard 更新 |
+| 盘后 | `post_close` HTML | `post_close_review_light.html`（盘后复盘） |
+| 每周五 | `weekly` HTML | `weekly_review_light.html`（周复盘） |
 
 ---
 
-## 馃敘 閫夎偂妯″瀷鎽樿
+## 🔢 选股模型摘要
 
-褰撳墠绛栫暐鐗堟湰锛歚a-share-watchpool-v0.9.0` 路 妯″瀷锛歚sector-first-driver-risk-execution-v4`
+当前策略版本：`a-share-watchpool-v0.9.0` · 模型：`sector-first-driver-risk-execution-v4`
 
-### 涓绘鍏ュ洿纭€ф潯浠讹紙鍏ㄩ儴婊¤冻锛?
-| 缁村害 | 闃堝€?|
+### 主榜入围硬性条件（全部满足）
+
+| 维度 | 阈值 |
 |------|------|
-| 甯傚満鎯呯华鍒?| 鈮?50 |
-| 鏉垮潡鏂瑰悜 | 蹇呴』涓轰紭鍏堟柟鍚?|
-| `driver_score`锛堥┍鍔ㄥ姏锛墊 鈮?72 |
-| `risk_penalty`锛堥闄╂墸鍒嗭級| 鈮?8 |
-| `execution_score`锛堟墽琛岃川閲忥級| 鈮?70 |
-| `execution_action` | 蹇呴』涓?`clear` |
+| 市场情绪分 | >= 50 |
+| 板块方向 | 必须为优先方向 |
+| `driver_score`（驱动力）| >= 72 |
+| `risk_penalty`（风险扣分）| <= 8 |
+| `execution_score`（执行质量）| >= 70 |
+| `execution_action` | 必须为 `clear` |
 
-### 涓夋。鏃堕棿缁村害
+### 三档时间维度
 
-| 鍒嗙被 | 鎸佷粨鍛ㄦ湡 | 璇存槑 |
+| 分类 | 持仓周期 | 说明 |
 |------|---------|------|
-| 鐭嚎娉㈡鍊欓€?| 1鈥?0 浜ゆ槗鏃?| 涓ユ牸涓绘锛岄渶鍏ㄩ儴纭€ф潯浠堕€氳繃 |
-| 涓嚎瓒嬪娍鍊欓€?| 20鈥?0 鏃?| 澶囬€?鎺ㄦ紨锛屾潯浠舵湭鍏ㄦ弧瓒虫椂闄嶇骇 |
-| 闀跨嚎浠峰€肩嚎绱?| 60鈥?40 鏃?| 鐮旂┒绾跨储锛屼笉杩涚煭绾夸富姒?|
+| 短线波段候选 | 1-10 交易日 | 严格主榜，需全部硬性条件通过 |
+| 中线趋势候选 | 20-60 日 | 备选/推演，条件未全满足时降级 |
+| 长线价值线索 | 60-240 日 | 研究线索，不进短线主榜 |
 
-> 璇︾粏妯″瀷璇存槑瑙?[docs/selection-model.md](docs/selection-model.md)
+> 详细模型说明见 [docs/selection-model.md](docs/selection-model.md)
 
 ---
 
-## 馃殌 蹇€熶笂鎵?
-### 1. 瀹夎渚濊禆
+## 🚀 快速上手
+
+### 1. 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 鍏嬮殕骞跺垵濮嬪寲宸ヤ綔绌洪棿
+### 2. 克隆并初始化工作空间
 
 ```bash
 git clone https://github.com/hasesc/a-share-watchpool.git
 cd a-share-watchpool
 
-# 鍒涘缓杩愯鏃剁洰褰曪紙鏁版嵁鐩綍涓嶇撼鍏ョ増鏈帶鍒讹級
-mkdir -p workspace/data/watchpool workspace/reports/daily workspace/logs
+# 创建运行时目录（数据目录不纳入版本控制）
+mkdir workspace\data\watchpool
+mkdir workspace\reports\daily
+mkdir workspace\logs
 ```
 
-### 3. 杩愯鐩樺墠 Pipeline
+### 3. 运行盘前 Pipeline
 
 ```powershell
-# 淇敼 ROOT 涓轰綘鐨勬湰鍦拌矾寰勶紝DATE 涓虹洰鏍囨棩鏈?$ROOT = "D:\your-path\a-share-watchpool\workspace"
-$DATE = "20260624"
+$ROOT = (Resolve-Path "workspace").Path
+$DATE = (Get-Date -Format "yyyyMMdd")
 
 powershell -File "scripts\run_daily_pipeline.ps1" -Stage pre_market -Root $ROOT -Date $DATE
 ```
 
-### 4. 鏌ョ湅鎶ュ憡
+### 4. 查看报告
 
-鎶ュ憡杈撳嚭鍒?`workspace/reports/daily/<yyyymmdd>/pre_market_light.html`锛岀敤娴忚鍣ㄧ洿鎺ユ墦寮€銆?
-> 馃摉 璇︾粏瀹夎涓庨厤缃鏄庤 [docs/quick-start.md](docs/quick-start.md)
+报告输出到 `workspace/reports/daily/<yyyymmdd>/pre_market_light.html`，用浏览器直接打开。
+
+> 详细安装与配置说明见 [docs/quick-start.md](docs/quick-start.md)
 
 ---
 
-## 馃搧 鐩綍缁撴瀯
+## 📁 目录结构
 
 ```
 a-share-watchpool/
-鈹?鈹溾攢鈹€ scripts/                   鈫?鏍稿績鑴氭湰锛堟暟鎹噰闆嗐€佹覆鏌撱€佸璁★級
-鈹?  鈹溾攢鈹€ run_daily_pipeline.ps1 鈫?Pipeline 鎬昏皟搴?鈹?  鈹溾攢鈹€ collect_public_data.py 鈫?琛屾儏鏁版嵁閲囬泦
-鈹?  鈹溾攢鈹€ render_watchpool_report.py 鈫?HTML 娓叉煋寮曟搸
-鈹?  鈹溾攢鈹€ watchpool_db.py        鈫?SQLite + Dashboard
-鈹?  鈹溾攢鈹€ audit_strategy.py      鈫?绛栫暐瀹¤
-鈹?  鈹斺攢鈹€ ...锛堝叡 14 涓剼鏈級
-鈹?鈹溾攢鈹€ workspace/                 鈫?鏈湴杩愯鏃讹紙鍏嬮殕鍚庡湪姝よ繍琛岋級
-鈹?  鈹溾攢鈹€ scripts/
-鈹?  鈹?  鈹溾攢鈹€ render_watchpool_light.py  鈫?涓绘棩鎶ュ叆鍙?鈹?  鈹?  鈹斺攢鈹€ collect_policy_news.py     鈫?鏂伴椈閲囬泦
-鈹?  鈹溾攢鈹€ config/
-鈹?  鈹?  鈹斺攢鈹€ industry_theme_map.json    鈫?琛屼笟涓婚鏄犲皠
-鈹?  鈹斺攢鈹€ paper-sim/             鈫?绾搁潰妯℃嫙鐩?鈹?      鈹溾攢鈹€ config.json
-鈹?      鈹斺攢鈹€ scripts/
-鈹?          鈹溾攢鈹€ paper_sim_portfolio.py
-鈹?          鈹斺攢鈹€ paper_sim_strategy_lab.py
-鈹?鈹溾攢鈹€ tools/                     鈫?鐙珛宸ュ叿锛堟棤闇€ pipeline 涓婁笅鏂囷級
-鈹?  鈹溾攢鈹€ screen_a_funds.py      鈫?鍩洪噾绛涢€夛紙鏀剁泭 + 鏈€澶у洖鎾わ級
-鈹?  鈹斺攢鈹€ inspect_fund_holdings.py 鈫?鍩洪噾鎸佷粨鏌ヨ
-鈹?鈹溾攢鈹€ docs/                      鈫?鏂囨。
-鈹?  鈹溾攢鈹€ quick-start.md
-鈹?  鈹溾攢鈹€ selection-model.md
-鈹?  鈹斺攢鈹€ data-sources.md
-鈹?鈹溾攢鈹€ requirements.txt
-鈹溾攢鈹€ LICENSE
-鈹斺攢鈹€ DISCLAIMER.md
+│
+├── scripts/                   ← 核心脚本（数据采集、渲染、审计，共 14 个）
+│   ├── run_daily_pipeline.ps1
+│   ├── collect_public_data.py
+│   ├── render_watchpool_report.py
+│   ├── watchpool_db.py
+│   └── ...
+│
+├── workspace/                 ← 本地运行时模板
+│   ├── scripts/
+│   │   ├── render_watchpool_light.py  ← 主日报入口
+│   │   └── collect_policy_news.py
+│   ├── config/
+│   │   └── industry_theme_map.json
+│   └── paper-sim/             ← 纸面模拟盘
+│       ├── config.json
+│       └── scripts/
+│           ├── paper_sim_portfolio.py
+│           └── paper_sim_strategy_lab.py
+│
+├── tools/                     ← 独立工具
+│   ├── screen_a_funds.py      ← 基金筛选
+│   └── inspect_fund_holdings.py
+│
+├── docs/                      ← 文档
+├── requirements.txt
+├── LICENSE
+└── DISCLAIMER.md
 ```
 
 ---
 
-## 馃洜锔?涓昏鑴氭湰璇存槑
+## 🛠️ 主要脚本说明
 
-| 鑴氭湰 | 鍔熻兘 |
+| 脚本 | 功能 |
 |------|------|
-| `scripts/collect_public_data.py` | 閲囬泦鍏ㄥ競鍦哄揩鐓с€佷氦鏄撴棩鍘嗐€並绾垮巻鍙?|
-| `scripts/check_execution_quality.py` | 娑ㄥ仠鏉?娴佸姩鎬?鎸箙/杩介珮椋庨櫓妫€鏌?|
-| `scripts/check_risk_events.py` | 鍏憡椋庨櫓鎵弿锛堝噺鎸併€佽В绂併€佺洃绠＄瓑锛?|
-| `scripts/check_concentration.py` | 鍊欓€夐泦琛屼笟闆嗕腑搴︽鏌?|
-| `scripts/monitor_data_health.py` | 鏁版嵁璐ㄩ噺鍋ュ悍鎶ュ憡 |
-| `scripts/render_watchpool_report.py` | 娓叉煋 HTML 鏃ユ姤锛堢函娓叉煋灞傦級 |
-| `scripts/watchpool_db.py` | SQLite 绠＄悊 + 绛栫暐浠〃鐩?|
-| `scripts/audit_strategy.py` | 绛栫暐璇佹嵁璐ㄩ噺瀹¤锛堥渶 鈮?0 鏍锋湰锛?|
-| `scripts/fill_review_outcomes.py` | T+1/T+2/T+3 缁撴灉鑷姩濉厖 |
-| `workspace/scripts/render_watchpool_light.py` | 涓绘棩鎶ュ叆鍙ｏ紙杞婚噺鐗堬紝鍚暟鎹鍙?娓叉煋锛?|
-| `workspace/scripts/collect_policy_news.py` | 鏀跨瓥/琛屼笟/涓偂鏂伴椈鍌寲鍓傞噰闆?|
-| `workspace/paper-sim/scripts/paper_sim_portfolio.py` | 绾搁潰妯℃嫙鐩橈紙鎸佷粨绠＄悊 + 鍐崇瓥锛?|
+| `scripts/collect_public_data.py` | 采集全市场快照、交易日历、K线历史 |
+| `scripts/check_execution_quality.py` | 涨停板/流动性/振幅/追高风险检查 |
+| `scripts/check_risk_events.py` | 公告风险扫描（减持、解禁、监管等） |
+| `scripts/monitor_data_health.py` | 数据质量健康报告 |
+| `scripts/render_watchpool_report.py` | 渲染 HTML 日报 |
+| `scripts/watchpool_db.py` | SQLite 管理 + 策略仪表盘 |
+| `scripts/audit_strategy.py` | 策略证据质量审计（需 >= 20 样本） |
+| `workspace/scripts/render_watchpool_light.py` | 主日报入口（轻量版） |
+| `workspace/paper-sim/scripts/paper_sim_portfolio.py` | 纸面模拟盘 |
 
 ---
 
-## 馃О 鐙珛宸ュ叿
+## 🧰 独立工具
 
-### 鍩洪噾绛涢€?
+### 基金筛选
+
 ```bash
 python tools/screen_a_funds.py
 ```
 
-绛涢€夋潯浠讹細杩?1 骞存鏀剁泭銆佹渶澶у洖鎾?鈮?20%銆佹帓闄ゅ€哄熀/璐у竵/QDII锛岃緭鍑哄墠 40 鍚嶃€?
-### 鍩洪噾鎸佷粨鏌ヨ
+筛选条件：近 1 年正收益、最大回撤 <= 20%、排除债基/货币/QDII，输出前 40 名。
+
+### 基金持仓查询
 
 ```bash
 python tools/inspect_fund_holdings.py
 ```
 
-鏌ヨ鎸囧畾鍩洪噾浠ｇ爜鐨勫墠鍗佸ぇ鎸佷粨鍜岃涓氶厤缃€?
 ---
 
-## 鈿狅笍 鏁版嵁鏉ユ簮
+## ⚠️ 数据来源
 
-鏈郴缁熶娇鐢ㄤ互涓嬪叕寮€鏁版嵁鎺ュ彛锛?
-- **[AKShare](https://github.com/akfamily/akshare)**锛氬叏甯傚満琛屾儏蹇収銆並绾垮巻鍙层€佷氦鏄撴棩鍘?- **涓滄柟璐㈠瘜**锛氳鎯呭鐢ㄦ簮
-- **鑵捐琛屾儏**锛氬崟鑲′环鏍间氦鍙夐獙璇?
-> 鎵€鏈夋暟鎹潎涓哄叕寮€淇℃伅锛屼笉浣跨敤浠讳綍浠樿垂鎴栫壒鏉冩暟鎹帴鍙ｃ€?
----
+本系统使用以下公开数据接口：
 
-## 馃 璐＄尞
-
-娆㈣繋鎻愪氦 Issue 鍜?Pull Request锛?
-- **Bug 鍙嶉**锛氫娇鐢?Issue 妯℃澘 鈫?Bug Report
-- **鍔熻兘寤鸿**锛氫娇鐢?Issue 妯℃澘 鈫?Feature Request
-- **浠ｇ爜璐＄尞**锛欶ork 鈫?鏂板缓鍒嗘敮 鈫?PR锛岃闄勪笂绠€瑕佽鏄?
----
-
-## 馃搫 璁稿彲璇?
-MIT License 路 瑙?[LICENSE](LICENSE)
+- **[AKShare](https://github.com/akfamily/akshare)**：全市场行情快照、K线历史、交易日历
+- **东方财富**：行情备用源
+- **腾讯行情**：单股价格交叉验证
 
 ---
 
-## 鈿栵笍 鍏嶈矗澹版槑
+## 🤝 贡献
 
-鏈」鐩粎渚涗釜浜哄涔犱笌鐮旂┒锛屼笉鏋勬垚鎶曡祫寤鸿锛屼笉浜х敓鐪熷疄涔板崠鎸囦护銆傝瑙?[DISCLAIMER.md](DISCLAIMER.md)銆?
-**甯傚満鏈夐闄╋紝浜ゆ槗闇€璋ㄦ厧銆?*
+欢迎提交 Issue 和 Pull Request！
 
+- **Bug 反馈**：使用 Issue 模板 → Bug Report
+- **功能建议**：使用 Issue 模板 → Feature Request
+
+---
+
+## 📄 许可证
+
+MIT License · 见 [LICENSE](LICENSE)
+
+---
+
+## ⚖️ 免责声明
+
+本项目仅供个人学习与研究，不构成投资建议，不产生真实买卖指令。详见 [DISCLAIMER.md](DISCLAIMER.md)。
+
+**市场有风险，交易需谨慎。**
