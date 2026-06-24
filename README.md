@@ -262,6 +262,8 @@ We welcome Issues and PRs. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
 版本维护记录见 [CHANGELOG.md](CHANGELOG.md)。
 
+社区行为准则见 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+
 ---
 
 ## 许可证 / License
