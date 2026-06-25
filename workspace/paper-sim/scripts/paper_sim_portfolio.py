@@ -165,7 +165,11 @@ def load_candidates(run_dir: Path) -> list[Candidate]:
     return items
 
 
-def latest_strategy_report(root: Path, date: str) -> Path | None:
+def latest_strategy_report(root: Path, date: str, stage: str | None = None) -> Path | None:
+    if stage:
+        path = root / "reports" / "daily" / date / f"{stage}_top5.json"
+        if path.exists():
+            return path
     path = root / "reports" / "daily" / date / "pre_market_top5.json"
     if path.exists():
         return path
@@ -376,6 +380,26 @@ def policy_from_market(gate_score: float, gate_regime: str | None, candidate_cou
     }
 
 
+def is_sector_matched(candidate_sector: str, catalyst_sector: str) -> bool:
+    c_sec = candidate_sector.lower()
+    cat_sec = catalyst_sector.lower()
+    if cat_sec in c_sec:
+        return True
+    if cat_sec == "半导体":
+        allowed_keywords = ["半导体", "芯片", "存储", "集成电路", "封装", "光刻", "pcb", "覆铜板", "电子", "通信"]
+        return any(kw in c_sec for kw in allowed_keywords)
+    elif cat_sec == "ai":
+        allowed_keywords = ["ai", "算法", "大模型", "软件", "计算机", "算力", "服务器"]
+        return any(kw in c_sec for kw in allowed_keywords)
+    elif cat_sec == "机器人":
+        allowed_keywords = ["机器人", "控制", "电机", "减速器", "传感器"]
+        return any(kw in c_sec for kw in allowed_keywords)
+    elif cat_sec == "消费电子":
+        allowed_keywords = ["消费电子", "手机", "面板", "显示", "终端"]
+        return any(kw in c_sec for kw in allowed_keywords)
+    return False
+
+
 def decide(project_root: Path, sim_root: Path, date: str, stage: str | None) -> tuple[dict[str, Any], dict[str, Any]]:
     run_dir = latest_run_dir(project_root, date, stage)
     portfolio_dir = sim_root / "data"
@@ -416,7 +440,7 @@ def decide(project_root: Path, sim_root: Path, date: str, stage: str | None) -> 
     session = read_json(run_dir / "trade_session.json", {}) or gate.get("trade_session") or {}
     execution = read_json(run_dir / "execution_quality.json", {}) or {}
     risk = read_json(run_dir / "risk_events.json", {}) or {}
-    strategy_report_path = latest_strategy_report(project_root, date)
+    strategy_report_path = latest_strategy_report(project_root, date, stage)
     candidates, strategy_report, strategy_warnings = load_strategy_candidates(strategy_report_path, run_dir)
     quote_rows = load_quote_prices(run_dir)
     price_by_code = {code: as_float(row.get("latest")) for code, row in quote_rows.items()}
@@ -433,8 +457,19 @@ def decide(project_root: Path, sim_root: Path, date: str, stage: str | None) -> 
     if not execution.get("promote_allowed_by_execution_check", False):
         global_blocks.append("execution_quality 未允许升级，不新开仓。")
     
-    gate_score = as_float(gate.get("score"))
-    policy = policy_from_market(gate_score, gate.get("regime"), len(candidates))
+    # Use gate from strategy report if available, to align with strategy decisions (including news nudges)
+    gate_opened_by_catalyst = False
+    catalyst_sector = None
+    strategy_gate = strategy_report.get("market_gate") or {} if strategy_report else {}
+    if strategy_report and "market_gate" in strategy_report:
+        gate_score = as_float(strategy_report["market_gate"].get("score"))
+        gate_regime = strategy_report["market_gate"].get("regime")
+        gate_opened_by_catalyst = bool(strategy_report["market_gate"].get("gate_opened_by_catalyst"))
+        catalyst_sector = strategy_report["market_gate"].get("catalyst_sector")
+    else:
+        gate_score = as_float(gate.get("score"))
+        gate_regime = gate.get("regime")
+    policy = policy_from_market(gate_score, gate_regime, len(candidates))
     
     allow_buy = not global_blocks and policy["target_exposure"] > 0 and bool(candidates)
     
@@ -563,6 +598,14 @@ def decide(project_root: Path, sim_root: Path, date: str, stage: str | None) -> 
                 continue
             if candidate.execution_action != "clear":
                 continue
+            
+            # If the gate was opened solely due to a global catalyst nudge, isolate buying to that sector
+            if gate_opened_by_catalyst and catalyst_sector:
+                cand_sector = candidate.sector or "unknown"
+                if not is_sector_matched(cand_sector, catalyst_sector):
+                    warnings.append(f"{candidate.code} skipped: gate opened by catalyst for {catalyst_sector}, but candidate is in {cand_sector}")
+                    continue
+            
             cash = as_float(state.get("cash"))
             amount = min(target_amount, cash)
             shares = int(amount // candidate.price // 100) * 100

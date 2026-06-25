@@ -13,7 +13,7 @@ param(
 $ErrorActionPreference = "Stop"
 # Resolve the scripts directory (where this .ps1 lives)
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$Skill = $ScriptDir
+$Skill = Split-Path -Parent $ScriptDir
 
 # If -Root was not supplied, default to the workspace/ directory next to scripts/
 if (-not $Root) {
@@ -189,7 +189,7 @@ if ($Stage -in @("pre_market", "pre_screen", "morning_confirm", "late_confirm", 
     }
 
     if ($RiskCodes.Count -gt 0 -and (Test-Path $SnapshotPath)) {
-      & $Python "$Skill\scripts\check_execution_quality.py" --snapshot $SnapshotPath --codes ($RiskCodes -join ",") --output (Join-Path $RunDir "execution_quality.json") --csv-output (Join-Path $RunDir "execution_quality.csv")
+      & $Python "$Skill\scripts\check_execution_quality.py" --snapshot $SnapshotPath --codes ($RiskCodes -join ",") --output (Join-Path $RunDir "execution_quality.json") --csv-output (Join-Path $RunDir "execution_quality.csv") --stage $Stage
       & $Python "$Skill\scripts\check_risk_events.py" --codes ($RiskCodes -join ",") --output (Join-Path $RunDir "risk_events.json") --csv-output (Join-Path $RunDir "risk_events.csv")
     }
     $PolicyNewsScript = Join-Path $Root "scripts\collect_policy_news.py"
@@ -235,6 +235,41 @@ if ($Stage -in @("pre_market", "pre_screen", "morning_confirm", "late_confirm", 
     }
   }
   if ($Stage -eq "morning_confirm" -or $Stage -eq "late_confirm") {
+    # Check if we should re-run screening dynamically due to a gate reversal or to initialize stage-specific candidates
+    $PreMarketSnapshot = Join-Path $Root "data\watchpool\$Date`_pre_market\market_gate_snapshot.json"
+    $CurrentSnapshot = Join-Path $RunDir "market_gate_snapshot.json"
+    
+    $PreScore = 0.0
+    if (Test-Path $PreMarketSnapshot) {
+      try {
+        $PreJson = Get-Content -LiteralPath $PreMarketSnapshot -Raw -Encoding UTF8 | ConvertFrom-Json
+        $PreScore = [double]$PreJson.score
+      } catch {
+        Write-Host "Failed to parse pre-market gate snapshot: $($_.Exception.Message)"
+      }
+    }
+    
+    $CurrentScore = 0.0
+    if (Test-Path $CurrentSnapshot) {
+      try {
+        $CurrentJson = Get-Content -LiteralPath $CurrentSnapshot -Raw -Encoding UTF8 | ConvertFrom-Json
+        $CurrentScore = [double]$CurrentJson.score
+      } catch {
+        Write-Host "Failed to parse current gate snapshot: $($_.Exception.Message)"
+      }
+    }
+    
+    # If pre-market gate was closed (< 50) and current is open (>= 50), run dynamic screening
+    if ($PreScore -lt 50.0 -and $CurrentScore -ge 50.0) {
+      $LightReportScript = Join-Path $Root "scripts\render_watchpool_light.py"
+      if (Test-Path $LightReportScript) {
+        Write-Host "Gate reversal detected! Pre-market: $PreScore, Current: $CurrentScore. Re-running screening for stage $Stage..."
+        & $Python $LightReportScript --root $Root --run-dir $RunDir pre-market
+      } else {
+        Write-Host "Light report script not found: $LightReportScript"
+      }
+    }
+
     $SimulatorScript = Join-Path $Root "paper-sim\scripts\paper_sim_portfolio.py"
     if (Test-Path $SimulatorScript) {
       Write-Host "Running paper simulator for stage $Stage..."

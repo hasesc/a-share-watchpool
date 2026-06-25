@@ -934,6 +934,12 @@ def candidate_score_breakdown(
         policy_score = min(policy_score, 6)
     if int(evidence_quality.get("credibility_score") or 0) < 60:
         policy_score = min(policy_score, 7)
+
+    # Global giant catalyst direct maximum bonus
+    catalyst_info = (policy_news or {}).get("global_macro_catalyst") or {}
+    if catalyst_info.get("triggered") and catalyst_info.get("sector") == direction:
+        policy_score = 20
+
     policy_score = max(0, min(20, policy_score))
 
     driver = momentum_score + liquidity_score + sector_score + policy_score
@@ -1656,8 +1662,11 @@ def build_failure_attribution_summary(items: list[dict[str, Any]]) -> dict[str, 
         "rule": "T+1/T+2/T+3 回填后按 reason_tags 统计收益和回撤，样本不足 20 前只观察不调参。",
     }
 
-def build_pre_market(root: Path, date: str) -> tuple[dict[str, Any], dict[str, Any]]:
-    run_dir = root / "data" / "watchpool" / f"{date}_pre_market"
+def build_pre_market(root: Path, date: str, run_dir_override: Path | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+    if run_dir_override:
+        run_dir = run_dir_override
+    else:
+        run_dir = root / "data" / "watchpool" / f"{date}_pre_market"
     reports = root / "reports"
     if not run_dir.exists():
         reason = f"今日目录不存在：{run_dir}"
@@ -1674,6 +1683,28 @@ def build_pre_market(root: Path, date: str) -> tuple[dict[str, Any], dict[str, A
     execution = read_json(run_dir / "execution_quality.json", {}) or {}
     risk = read_json(run_dir / "risk_events.json", {}) or {}
     policy_news = read_json(run_dir / "policy_news.json", {}) or {}
+    if not policy_news:
+        pre_market_news = root / "data" / "watchpool" / f"{date}_pre_market" / "policy_news.json"
+        if pre_market_news.exists():
+            policy_news = read_json(pre_market_news, {}) or {}
+
+    # Global giant catalyst gate nudge
+    catalyst_info = policy_news.get("global_macro_catalyst") or {}
+    if catalyst_info.get("triggered"):
+        original_score = float(gate.get("score") or 0.0)
+        original_regime = gate.get("regime") or ""
+        original_is_closed = (original_score < 50.0) or ("防守" in original_regime) or ("空仓" in original_regime)
+        
+        gate["score"] = min(100.0, original_score + 8.0)
+        
+        # If the gate is opened via the nudge, upgrade the regime to avoid the "防守" or "空仓" block
+        if gate["score"] >= 50.0:
+            gate["regime"] = "试探日(事件驱动)"
+            gate["position"] = "20-40%"
+            
+        if original_is_closed and (gate["score"] >= 50.0):
+            gate["gate_opened_by_catalyst"] = True
+            gate["catalyst_sector"] = catalyst_info.get("sector")
 
     if not session.get("is_trade_day", True):
         reason = "今日非交易日，不生成候选。"
@@ -2528,15 +2559,23 @@ def validate_report(report: dict[str, Any], html_path: Path, require_all_section
 def command_pre_market(args: argparse.Namespace) -> int:
     root = Path(args.root)
     date = args.date or yyyymmdd_today()
-    report, summary = build_pre_market(root, date)
+    run_dir_override = Path(args.run_dir) if args.run_dir else None
+    report, summary = build_pre_market(root, date, run_dir_override=run_dir_override)
     out_dir = daily_report_dir(root, date)
-    json_path = out_dir / "pre_market_top5.json"
-    html_path = out_dir / "pre_market_light.html"
+    if run_dir_override:
+        parts = run_dir_override.name.split("_")
+        suffix = "_".join(parts[1:]) if len(parts) > 1 else run_dir_override.name
+        json_path = out_dir / f"{suffix}_top5.json"
+        html_path = out_dir / f"{suffix}_light.html"
+        summary_path = out_dir / f"{suffix}_run_summary.json"
+    else:
+        json_path = out_dir / "pre_market_top5.json"
+        html_path = out_dir / "pre_market_light.html"
+        summary_path = out_dir / "pre_market_run_summary.json"
     write_json(json_path, report)
     render_html(report, html_path)
     errors = validate_report(report, html_path, require_all_sections=summary.get("status") == "ok")
     summary.update({"validation_errors": errors, "generated_at": datetime.now().isoformat(timespec="seconds")})
-    summary_path = out_dir / "pre_market_run_summary.json"
     write_json(summary_path, summary)
     publish_latest(root, [html_path, json_path, summary_path], date, "pre_market")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
@@ -2583,6 +2622,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Render deterministic light watchpool reports.")
     parser.add_argument("--root", default=str(ROOT_DEFAULT))
     parser.add_argument("--date", help="YYYYMMDD, default: today")
+    parser.add_argument("--run-dir", help="Explicit path to watchpool run directory (bypasses default folder construction)")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("pre-market")
     sub.add_parser("post-close")

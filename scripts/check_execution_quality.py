@@ -86,7 +86,7 @@ def select_codes(args: argparse.Namespace) -> list[str]:
     return out
 
 
-def evaluate(code: str, row: dict[str, Any] | None) -> dict[str, Any]:
+def evaluate(code: str, row: dict[str, Any] | None, stage: str | None = None) -> dict[str, Any]:
     if row is None:
         return {
             "code": code,
@@ -139,12 +139,20 @@ def evaluate(code: str, row: dict[str, Any] | None) -> dict[str, Any]:
             flags.append("large_open_gap")
             score -= 12
     if amount is not None:
-        if amount < 100_000_000:
-            flags.append("insufficient_liquidity")
-            score -= 35
-        elif amount < 300_000_000:
-            flags.append("thin_liquidity")
-            score -= 15
+        if stage == "morning_confirm":
+            if amount < 10_000_000:
+                flags.append("insufficient_liquidity")
+                score -= 35
+            elif amount < 30_000_000:
+                flags.append("thin_liquidity")
+                score -= 15
+        else:
+            if amount < 100_000_000:
+                flags.append("insufficient_liquidity")
+                score -= 35
+            elif amount < 300_000_000:
+                flags.append("thin_liquidity")
+                score -= 15
     if amplitude is not None:
         if amplitude >= 16:
             flags.append("excessive_intraday_amplitude")
@@ -208,6 +216,7 @@ def main() -> int:
     parser.add_argument("--candidates", help="Optional candidate CSV/log containing code column.")
     parser.add_argument("--output", required=True, help="JSON output path.")
     parser.add_argument("--csv-output", help="Optional CSV output.")
+    parser.add_argument("--stage", help="Current trading session stage.")
     args = parser.parse_args()
 
     snapshot_rows = read_csv(Path(args.snapshot))
@@ -215,7 +224,7 @@ def main() -> int:
     codes = select_codes(args)
     if not codes:
         raise SystemExit("provide --codes or --candidates")
-    rows = [evaluate(code, snapshot.get(code)) for code in codes]
+    rows = [evaluate(code, snapshot.get(code), stage=args.stage) for code in codes]
     result = summarize(rows, args.snapshot)
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

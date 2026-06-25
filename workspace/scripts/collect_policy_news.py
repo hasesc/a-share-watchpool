@@ -9,6 +9,8 @@ import json
 import threading
 import queue
 import socket
+import urllib.request
+import urllib.error
 from datetime import datetime
 
 # Set global timeout for socket operations
@@ -18,14 +20,36 @@ from typing import Any
 
 
 THEME_KEYWORDS = {
-    "半导体": ["半导体", "芯片", "存储", "集成电路", "国产替代", "光刻", "先进封装"],
+    "半导体": ["半导体", "芯片", "存储", "集成电路", "国产替代", "光刻", "先进封装", "美光", "英伟达", "台积电", "阿斯麦", "辉达", "美光科技", "英伟达财报", "nvda", "mu"],
     "光通信": ["光通信", "光模块", "算力", "数据中心", "CPO", "高速互联"],
     "新材料": ["新材料", "稀有金属", "钨", "稀土", "锂电", "材料"],
-    "消费电子": ["消费电子", "面板", "OLED", "AI手机", "终端"],
+    "消费电子": ["消费电子", "面板", "OLED", "AI手机", "终端", "苹果", "apple", "华为", "huawei"],
     "黄金资源": ["黄金", "贵金属", "资源", "矿业"],
     "机器人": ["机器人", "人形机器人", "减速器", "传感器"],
-    "AI": ["人工智能", "AI", "大模型", "算力", "服务器"],
+    "AI": ["人工智能", "AI", "大模型", "算力", "服务器", "openai", "chatgpt", "sora", "claude"],
 }
+
+GLOBAL_GIANTS_MAP = {
+    "美光": "半导体",
+    "英伟达": "半导体",
+    "台积电": "半导体",
+    "阿斯麦": "半导体",
+    "辉达": "半导体",
+    "美光科技": "半导体",
+    "nvda": "半导体",
+    "mu": "半导体",
+    "openai": "AI",
+    "chatgpt": "AI",
+    "sora": "AI",
+    "claude": "AI",
+    "特斯拉": "机器人",
+    "tesla": "机器人",
+    "苹果": "消费电子",
+    "apple": "消费电子",
+    "华为": "消费电子",
+    "huawei": "消费电子"
+}
+CATALYST_ACTIONS = ["财报", "业绩", "季报", "营收", "超预期", "净利润", "大增", "发布会", "禁令", "制裁", "限制", "关税"]
 
 NEWS_CATEGORY_KEYWORDS = {
     "policy_level": [
@@ -281,6 +305,99 @@ def classify_news(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     output.sort(key=lambda item: item["hit_count"], reverse=True)
     return output[:6]
 
+def analyze_catalysts_via_llm(headlines: list[str]) -> dict[str, Any] | None:
+    import os
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return None
+        
+    api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1").rstrip("/")
+    model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+    
+    # Select a subset of headlines to avoid blowing context window
+    selected_headlines = headlines[:60]
+    
+    prompt = (
+        "You are an expert quantitative researcher. Analyze the following financial headlines for any major global catalyst "
+        "caused by an industry giant (e.g. Nvidia, Micron, TSMC, OpenAI, Tesla, Apple, Huawei) releasing earnings, "
+        "guidance, or making product breakthroughs that would heavily influence A-share sectors like Semiconductors, AI, "
+        "Robotics, or Consumer Electronics.\n\n"
+        "Headlines:\n" + "\n".join(f"- {h}" for h in selected_headlines) + "\n\n"
+        "Respond ONLY with a JSON object of the following format (no markdown, no other text):\n"
+        "{\n"
+        "  \"triggered\": true,\n"
+        "  \"giant\": \"Micron\",\n"
+        "  \"sector\": \"半导体\",\n"
+        "  \"action\": \"earnings\",\n"
+        "  \"headline\": \"the matched headline\"\n"
+        "}\n"
+        "If no major global catalyst is found, respond with {\"triggered\": false}."
+    )
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+    
+    data = {
+        "model": model,
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.0,
+        "response_format": {"type": "json_object"}
+    }
+    
+    try:
+        req = urllib.request.Request(
+            f"{api_base}/chat/completions",
+            data=json.dumps(data).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            content = res_data["choices"][0]["message"]["content"].strip()
+            result = json.loads(content)
+            if result.get("triggered"):
+                return {
+                    "triggered": True,
+                    "giant": str(result.get("giant") or ""),
+                    "sector": str(result.get("sector") or ""),
+                    "action": str(result.get("action") or ""),
+                    "headline": str(result.get("headline") or "")
+                }
+    except Exception as e:
+        print(f"LLM API analysis failed or timed out: {e}. Falling back to regex.")
+        
+    return None
+
+
+def detect_global_catalyst(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    # 1. Try LLM first if API key is present
+    headlines = [row_title(row) for row in rows if row_title(row)]
+    llm_result = analyze_catalysts_via_llm(headlines)
+    if llm_result:
+        print(f"LLM detected catalyst: {llm_result}")
+        return llm_result
+        
+    # 2. Fallback to local regex-based matcher
+    for row in rows:
+        text = row_text(row)
+        text_lower = text.lower()
+        for giant, sector in GLOBAL_GIANTS_MAP.items():
+            if giant in text_lower:
+                for action in CATALYST_ACTIONS:
+                    if action in text_lower:
+                        return {
+                            "triggered": True,
+                            "giant": giant,
+                            "sector": sector,
+                            "action": action,
+                            "headline": row_title(row)
+                        }
+    return None
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Collect policy/news catalyst evidence.")
@@ -332,6 +449,7 @@ def main() -> int:
         "sources": sources,
         "stock_news": stock_news,
         "catalyst_themes": catalyst,
+        "global_macro_catalyst": detect_global_catalyst(rows),
         "classification_summary": classify_news_texts(classification_texts),
         "evidence_quality": evidence_quality(status, sources, generated_at),
         "source_quality": source_quality_summary(status, sources, stock_news),
