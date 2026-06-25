@@ -57,6 +57,20 @@ def sign_class(v):
     return "flat"
 
 # ── Position rows ─────────────────────────────────────────────────────────────
+# Calculate trading days from equity_curve and state
+trading_days_set = set()
+for l in curve_raw:
+    if l.strip():
+        try:
+            c = json.loads(l)
+            if "date" in c:
+                trading_days_set.add(c["date"])
+        except Exception:
+            pass
+if state.get("last_decision_date"):
+    trading_days_set.add(state.get("last_decision_date"))
+trading_days_sorted = sorted(list(trading_days_set))
+
 pos_rows = ""
 total_pos_val = 0.0
 for code, pos in positions.items():
@@ -76,7 +90,25 @@ for code, pos in positions.items():
 
     tags      = pos.get("reason_tags") or []
     tags_html = "".join(f'<span class="tag">{esc(t)}</span>' for t in tags) if tags else "—"
+    
+    # Calculate display days: difference of trading days index between last decision date and entry date
+    entry_date = pos.get("entry_date")
+    current_date = state.get("last_decision_date")
     hold_d    = int(pos.get("hold_decisions") or 0)
+    display_days = hold_d
+    if entry_date and current_date and entry_date in trading_days_sorted and current_date in trading_days_sorted:
+        idx_current = trading_days_sorted.index(current_date)
+        idx_entry = trading_days_sorted.index(entry_date)
+        display_days = max(0, idx_current - idx_entry)
+    else:
+        if entry_date and current_date:
+            try:
+                d_entry = datetime.strptime(entry_date, "%Y%m%d")
+                d_current = datetime.strptime(current_date, "%Y%m%d")
+                display_days = max(0, (d_current - d_entry).days)
+            except Exception:
+                pass
+
     entry_d   = esc(pos.get("entry_date", ""))
 
     pnl_sign  = "+" if pnl >= 0 else ""
@@ -100,7 +132,7 @@ for code, pos in positions.items():
       <td class="num">{money(last_price)}</td>
       <td class="num">{money(val)}</td>
       <td class="num {sc}">{pnl_sign}{money(pnl)}<br><small>{pnl_sign}{pnl_pct:.2f}%</small></td>
-      <td class="num muted">{entry_d} / {hold_d}天</td>
+      <td class="num muted">{entry_d} / {display_days}天</td>
       <td><div class="score-mini">
         <span title="driver">{driver:.0f}</span>·<span title="risk" class="dn">{risk_pen:.0f}</span>·<span title="exec">{exec_sc:.0f}</span>
       </div>{tags_html}</td>

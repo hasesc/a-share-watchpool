@@ -764,6 +764,25 @@ def render_html(snapshot: dict[str, Any], output: Path) -> None:
     warnings = snapshot.get("warnings") or []
     
     # Calculate position values and overall metrics
+    # Load trading days from equity_curve.jsonl to calculate display holding days
+    sim_root = output.parent.parent
+    curve_path = sim_root / "data" / "equity_curve.jsonl"
+    trading_days = set()
+    if curve_path.exists():
+        try:
+            with open(curve_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip():
+                        c = json.loads(line)
+                        if "date" in c:
+                            trading_days.add(c["date"])
+        except Exception:
+            pass
+    current_date = snapshot.get("date")
+    if current_date:
+        trading_days.add(current_date)
+    trading_days_sorted = sorted(list(trading_days))
+
     total_positions_val = 0.0
     pos_rows_list = []
     
@@ -779,6 +798,23 @@ def render_html(snapshot: dict[str, Any], output: Path) -> None:
         pnl = current_value - cost_basis
         pnl_pct = (last_price / avg_price - 1.0) * 100.0 if avg_price else 0.0
         
+        # Calculate display days: difference of trading days index between current date and entry date
+        entry_date = p.get("entry_date")
+        hold_decisions = int(p.get("hold_decisions") or 0)
+        display_days = hold_decisions
+        if entry_date and current_date and entry_date in trading_days_sorted and current_date in trading_days_sorted:
+            idx_current = trading_days_sorted.index(current_date)
+            idx_entry = trading_days_sorted.index(entry_date)
+            display_days = max(0, idx_current - idx_entry)
+        else:
+            if entry_date and current_date:
+                try:
+                    d_entry = datetime.strptime(entry_date, "%Y%m%d")
+                    d_current = datetime.strptime(current_date, "%Y%m%d")
+                    display_days = max(0, (d_current - d_entry).days)
+                except Exception:
+                    pass
+
         if pnl > 0.01:
             pnl_class = "up-color"
             pnl_sign = "+"
@@ -811,7 +847,7 @@ def render_html(snapshot: dict[str, Any], output: Path) -> None:
             f"<td>{money(last_price)}</td>"
             f"<td>{money(current_value)}</td>"
             f"<td class='{pnl_class} font-semibold'>{pnl_sign}{money(pnl)} ({pnl_sign}{pnl_pct:.2f}%)</td>"
-            f"<td><span class='badge badge-neutral'>{int(p.get('hold_decisions') or 0)}天</span></td>"
+            f"<td><span class='badge badge-neutral'>{display_days}天</span></td>"
             f"</tr>"
         )
     
