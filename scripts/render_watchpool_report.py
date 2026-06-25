@@ -699,29 +699,6 @@ def render_html(data: dict[str, Any]) -> str:
     <div class="box"><p>{esc(data.get("market_environment", "暂无周审计摘要。"))}</p></div>
   </section>
 
-  <section>
-    <h2>策略审计与结论</h2>
-    {render_market_gate(data.get("market_gate"))}
-  </section>
-
-  {render_candidate_groups(data)}
-
-  <section>
-    <h2>规则反馈与模型说明</h2>
-    {render_selection_model(data.get("selection_model"))}
-  </section>
-
-  <section class="two-col">
-    <div>
-      <h2>交叉验证</h2>
-      {render_cross_check(data.get("cross_check"))}
-    </div>
-    <div>
-      <h2>复盘明细</h2>
-      {render_review_tracking(data.get("review_tracking"))}
-    </div>
-  </section>
-
   <section class="two-col">
     <div class="box">
       <h2>本期首选</h2>
@@ -732,6 +709,34 @@ def render_html(data: dict[str, Any]) -> str:
       {render_risks(data.get("risks") or [])}
     </div>
   </section>
+
+  {render_candidate_groups(data)}
+
+  <details class="advanced-audit-details" style="margin-top: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); padding: 12px 20px;">
+    <summary style="cursor: pointer; font-weight: 700; color: var(--accent-light); outline: none; user-select: none;">🛠️ 展开高级量化审计与模型参数</summary>
+    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 20px;">
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>策略审计与结论</h2>
+        {render_market_gate(data.get("market_gate"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>规则反馈与模型说明</h2>
+        {render_selection_model(data.get("selection_model"))}
+      </section>
+
+      <section class="two-col" style="margin-top: 0; box-shadow: none;">
+        <div>
+          <h2>交叉验证</h2>
+          {render_cross_check(data.get("cross_check"))}
+        </div>
+        <div>
+          <h2>复盘明细</h2>
+          {render_review_tracking(data.get("review_tracking"))}
+        </div>
+      </section>
+    </div>
+  </details>
 """
     elif body_class == "mode-postclose":
         content_html = f"""
@@ -744,27 +749,18 @@ def render_html(data: dict[str, Any]) -> str:
     <div class="box"><p>{esc(data.get("market_environment", "暂无复盘摘要。"))}</p></div>
   </section>
 
+  <section class="two-col">
+    <div class="box">
+      <h2>本期首选：{esc(one_pick.get("code", data.get("preferred", "待定")))}</h2>
+      <p>{esc(one_pick.get("text", "未达最强证据，不强行开仓。"))}</p>
+    </div>
+    <div class="box risk">
+      <h2>复盘风险提示</h2>
+      {render_risks(data.get("risks") or [])}
+    </div>
+  </section>
+
   {render_candidate_groups(data)}
-
-  <section>
-    <h2>失败归因统计</h2>
-    {render_failure_attribution(data.get("failure_attribution"))}
-  </section>
-
-  <section>
-    <h2>规则参数与反馈</h2>
-    {render_selection_model(data.get("selection_model"))}
-  </section>
-
-  <section>
-    <h2>盘后市场门槛诊断</h2>
-    {render_market_gate(data.get("market_gate"))}
-  </section>
-
-  <section>
-    <h2>市场细节快照</h2>
-    {render_market_microstructure(data.get("market_microstructure"))}
-  </section>
 
   <section>
     <h2>催化跟踪与卡点</h2>
@@ -780,27 +776,41 @@ def render_html(data: dict[str, Any]) -> str:
     </div>
   </section>
 
-  <section class="two-col">
-    <div>
-      <h2>多模型交叉验证</h2>
-      {render_cross_check(data.get("cross_check"))}
-    </div>
-    <div>
-      <h2>可执行性核验记录</h2>
-      {render_execution_quality(data.get("execution_quality"))}
-    </div>
-  </section>
+  <details class="advanced-audit-details" style="margin-top: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); padding: 12px 20px;">
+    <summary style="cursor: pointer; font-weight: 700; color: var(--accent-light); outline: none; user-select: none;">🛠️ 展开高级量化审计与模型参数</summary>
+    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 20px;">
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>失败归因统计</h2>
+        {render_failure_attribution(data.get("failure_attribution"))}
+      </section>
 
-  <section class="two-col">
-    <div class="box">
-      <h2>本期首选：{esc(one_pick.get("code", data.get("preferred", "待定")))}</h2>
-      <p>{esc(one_pick.get("text", "未达最强证据，不强行开仓。"))}</p>
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>规则参数与反馈</h2>
+        {render_selection_model(data.get("selection_model"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>盘后市场门槛诊断</h2>
+        {render_market_gate(data.get("market_gate"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>市场细节快照</h2>
+        {render_market_microstructure(data.get("market_microstructure"))}
+      </section>
+
+      <section class="two-col" style="margin-top: 0; box-shadow: none;">
+        <div>
+          <h2>多模型交叉验证</h2>
+          {render_cross_check(data.get("cross_check"))}
+        </div>
+        <div>
+          <h2>可执行性核验记录</h2>
+          {render_execution_quality(data.get("execution_quality"))}
+        </div>
+      </section>
     </div>
-    <div class="box risk">
-      <h2>复盘风险提示</h2>
-      {render_risks(data.get("risks") or [])}
-    </div>
-  </section>
+  </details>
 """
     else:
         # default pre-market layout
@@ -814,66 +824,6 @@ def render_html(data: dict[str, Any]) -> str:
     <div class="box"><p>{esc(data.get("market_environment", "暂无市场观点。"))}</p></div>
   </section>
 
-  <section>
-    <h2>盘前新闻政策催化</h2>
-    {render_policy_news(data.get("policy_news_catalyst"))}
-  </section>
-
-  <section>
-    <h2>最强板块方向</h2>
-    <div class="direction-grid">
-      {render_directions(data.get("directions") or [])}
-    </div>
-  </section>
-
-  <section>
-    <h2>产业链卡点拆解</h2>
-    {render_scarce_layers(data.get("scarce_layers"))}
-  </section>
-
-  {render_candidate_groups(data)}
-
-  <section>
-    <h2>量化市场门槛</h2>
-    {render_market_gate(data.get("market_gate"))}
-  </section>
-
-  <section>
-    <h2>市场细节快照</h2>
-    {render_market_microstructure(data.get("market_microstructure"))}
-  </section>
-
-  <section>
-    <h2>硬过滤排除</h2>
-    {render_hard_filters(data.get("hard_filters"))}
-  </section>
-
-  <section>
-    <h2>主榜筛选模型</h2>
-    {render_selection_model(data.get("selection_model"))}
-  </section>
-
-  <section>
-    <h2>降级约束明细</h2>
-    {render_downgrade_constraints(data)}
-  </section>
-
-  <section>
-    <h2>尾盘可执行性检查</h2>
-    {render_execution_quality(data.get("execution_quality"))}
-  </section>
-
-  <section class="two-col">
-    <div>
-      <h2>多模型交叉验证</h2>
-      {render_cross_check(data.get("cross_check"))}
-    </div>
-    <div>
-      <h2>复盘跟踪锚定</h2>
-      {render_review_tracking(data.get("review_tracking"))}
-    </div>
-  </section>
-
   <section class="two-col">
     <div class="box">
       <h2>今日首选候选：{esc(one_pick.get("code", data.get("preferred", "待定")))}</h2>
@@ -884,6 +834,71 @@ def render_html(data: dict[str, Any]) -> str:
       {render_risks(data.get("risks") or [])}
     </div>
   </section>
+
+  {render_candidate_groups(data)}
+
+  <section>
+    <h2>最强板块方向</h2>
+    <div class="direction-grid">
+      {render_directions(data.get("directions") or [])}
+    </div>
+  </section>
+
+  <section>
+    <h2>盘前新闻政策催化</h2>
+    {render_policy_news(data.get("policy_news_catalyst"))}
+  </section>
+
+  <section>
+    <h2>产业链卡点拆解</h2>
+    {render_scarce_layers(data.get("scarce_layers"))}
+  </section>
+
+  <details class="advanced-audit-details" style="margin-top: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); padding: 12px 20px;">
+    <summary style="cursor: pointer; font-weight: 700; color: var(--accent-light); outline: none; user-select: none;">🛠️ 展开高级量化审计与模型参数</summary>
+    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 20px;">
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>量化市场门槛</h2>
+        {render_market_gate(data.get("market_gate"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>市场细节快照</h2>
+        {render_market_microstructure(data.get("market_microstructure"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>硬过滤排除</h2>
+        {render_hard_filters(data.get("hard_filters"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>主榜筛选模型</h2>
+        {render_selection_model(data.get("selection_model"))}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>降级约束明细</h2>
+        {render_downgrade_constraints(data)}
+      </section>
+
+      <section style="margin-top: 0; box-shadow: none;">
+        <h2>尾盘可执行性检查</h2>
+        {render_execution_quality(data.get("execution_quality"))}
+      </section>
+
+      <section class="two-col" style="margin-top: 0; box-shadow: none;">
+        <div>
+          <h2>多模型交叉验证</h2>
+          {render_cross_check(data.get("cross_check"))}
+        </div>
+        <div>
+          <h2>复盘跟踪锚定</h2>
+          {render_review_tracking(data.get("review_tracking"))}
+        </div>
+      </section>
+    </div>
+  </details>
 """
 
     return f"""<!doctype html>
